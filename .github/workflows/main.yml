@@ -43,6 +43,7 @@ jobs:
           echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
           echo "RUNNER_OS: $RUNNER_OS"
           echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
         
       - run: ls ${{ env.ANALYSIS_TOOLS_BIN }}
         shell: bash
@@ -52,7 +53,7 @@ jobs:
           export PATH=$PATH:$COVBIN
           cov-configure --config ${{ env.CONFIG_FILE }} --gcc
           cov-build --dir ${{ env.INTERMEDIATE_DIR }} --config ${{ env.CONFIG_FILE }}  g++ hello.cpp -o hello
-          cov-analyze --dir ${{ env.INTERMEDIATE_DIR }} --strip-path ${{ env.GITHUB_WORKSPACE }} --all
+          cov-analyze --dir ${{ env.INTERMEDIATE_DIR }} --strip-path "$GITHUB_WORKSPACE" --all
           cov-commit-defects --dir ${{ env.INTERMEDIATE_DIR }} --host ${{ env.COVERITY_HOSTNAME }} --dataport ${{ env.COVERITY_PORT }} --user ${{ env.COVERITY_USER }} --password ${{ env.COVERITY_PASSWORD }} --certs /u/khanht/cert.pem --stream ${{ env.COVERITY_STREAM }} --description $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID --target $RUNNER_OS --version $GITHUB_SHA
         
 
