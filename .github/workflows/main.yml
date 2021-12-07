@@ -26,7 +26,7 @@ jobs:
       COVERITY_STREAM: HelloWorld_C++
       CONFIG_FILE: coverityconfig/coverity_config.xml
       INTERMEDIATE_DIR: CoverityIDIR
-      ANALYSIS_TOOLS_BIN: /x/eng/coverity/ANALYSIS_TOOLS/2021.03/cov-analysis-linux64-2021.03/bin
+      COVBIN: /x/eng/coverity/ANALYSIS_TOOLS/2021.03/cov-analysis-linux64-2021.03/bin
     
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -34,22 +34,27 @@ jobs:
         uses: actions/checkout@v2
         
       - name: Validate
-        run: pwd; tree
+        run: |
+          pwd; 
+          tree; 
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_SERVER_URL: $GITHUB_SERVER_URL"
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo "RUNNER_OS: $RUNNER_OS"
+          echo "GITHUB_SHA: $GITHUB_SHA"
         
       - run: ls ${{ env.ANALYSIS_TOOLS_BIN }}
         shell: bash
         
-      - run: ${{ env.ANALYSIS_TOOLS_BIN }}/cov-configure --config ${{ env.CONFIG_FILE }} --gcc
-        shell: bash
+      - name: Coverity Full Scan
+        run: |
+          export PATH=$PATH:$COVBIN
+          cov-configure --config ${{ env.CONFIG_FILE }} --gcc
+          cov-build --dir ${{ env.INTERMEDIATE_DIR }} --config ${{ env.CONFIG_FILE }}  g++ hello.cpp -o hello
+          cov-analyze --dir ${{ env.INTERMEDIATE_DIR }} --strip-path ${{ env.GITHUB_WORKSPACE }} --all
+          cov-commit-defects --dir ${{ env.INTERMEDIATE_DIR }} --host ${{ env.COVERITY_HOSTNAME }} --dataport ${{ env.COVERITY_PORT }} --user ${{ env.COVERITY_USER }} --password ${{ env.COVERITY_PASSWORD }} --certs /u/khanht/cert.pem --stream ${{ env.COVERITY_STREAM }} --description $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID --target $RUNNER_OS --version $GITHUB_SHA
         
-      - run: ${{ env.ANALYSIS_TOOLS_BIN }}/cov-build --dir ${{ env.INTERMEDIATE_DIR }} --config ${{ env.CONFIG_FILE }}  g++ hello.cpp -o hello
-        shell: bash
-        
-      - run: ${{ env.ANALYSIS_TOOLS_BIN }}/cov-analyze --dir ${{ env.INTERMEDIATE_DIR }} --strip-path ${{ env.GITHUB_WORKSPACE }} --all
-        shell: bash
-        
-      - run: ${{ env.ANALYSIS_TOOLS_BIN }}/cov-commit-defects --dir ${{ env.INTERMEDIATE_DIR }} --host ${{ env.COVERITY_HOSTNAME }} --dataport ${{ env.COVERITY_PORT }} --user ${{ env.COVERITY_USER }} --password ${{ env.COVERITY_PASSWORD }} --certs /u/khanht/cert.pem --stream ${{ env.COVERITY_STREAM }}
-        shell: bash
 
     
   
