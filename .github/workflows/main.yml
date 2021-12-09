@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# Setup a workflow to trigger/run Coverity scan 
 name: CI
 
 # Controls when the workflow will run
@@ -48,6 +48,10 @@ jobs:
         run: |
           export PATH=$PATH:$COVBIN
           cov-configure --config ${{ env.CONFIG_FILE }} --gcc
+          
+          #Syntax for cov-build
+          #    cov-build --dir <INTERMEDIATE_DIR> --config <CONFIG_FILE>  <command_to_build>
+          #       where <command_to_build> is the command to build this product
           cov-build --dir ${{ env.INTERMEDIATE_DIR }} --config ${{ env.CONFIG_FILE }}  g++ hello.cpp -o hello
           cov-analyze --dir ${{ env.INTERMEDIATE_DIR }} --strip-path "$GITHUB_WORKSPACE" --all
           cov-commit-defects --dir ${{ env.INTERMEDIATE_DIR }} --url ${{ env.COVERITY_URL }} --stream ${{ secrets.COVERITY_STREAM }} --user ${{ secrets.COVERITY_USER }} --password ${{ secrets.COVERITY_PASSWORD }} --description $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID --target $RUNNER_OS --version $GITHUB_SHA
