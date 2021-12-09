@@ -19,6 +19,7 @@ jobs:
     name: Coverity
     runs-on: ['self-hosted', 'linux']
     env:
+      COVERITY_URL: https://coverity.cls.eng.netapp.com
       CONFIG_FILE: coverityconfig/coverity_config.xml
       INTERMEDIATE_DIR: CoverityIDIR
       COVBIN: /x/eng/coverity/ANALYSIS_TOOLS/2021.03/cov-analysis-linux64-2021.03/bin
@@ -49,7 +50,7 @@ jobs:
           cov-configure --config ${{ env.CONFIG_FILE }} --gcc
           cov-build --dir ${{ env.INTERMEDIATE_DIR }} --config ${{ env.CONFIG_FILE }}  g++ hello.cpp -o hello
           cov-analyze --dir ${{ env.INTERMEDIATE_DIR }} --strip-path "$GITHUB_WORKSPACE" --all
-          cov-commit-defects --dir ${{ env.INTERMEDIATE_DIR }} --host ${{ secrets.COVERITY_HOST }} --dataport ${{ secrets.COVERITY_PORT }} --user ${{ secrets.COVERITY_USER }} --password ${{ secrets.COVERITY_PASSWORD }} --stream ${{ secrets.COVERITY_STREAM }} --description $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID --target $RUNNER_OS --version $GITHUB_SHA
+          cov-commit-defects --dir ${{ env.INTERMEDIATE_DIR }} --url ${{ env.COVERITY_URL }} --stream ${{ secrets.COVERITY_STREAM }} --user ${{ secrets.COVERITY_USER }} --password ${{ secrets.COVERITY_PASSWORD }} --description $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID --target $RUNNER_OS --version $GITHUB_SHA
         
 
     
